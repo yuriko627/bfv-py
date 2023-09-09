@@ -114,7 +114,7 @@ class RLWE:
         u = self.SampleFromChiKeyDistribution()
 
 		# delta = q/t
-        delta = self.Rq.modulus / self.Rt.modulus
+        delta = self.Rq.Q / self.Rt.Q
 
         # Round delta to the lower integer
         delta = math.floor(delta)
@@ -164,8 +164,8 @@ class RLWE:
         # Numerator 1 is in Rq.
         numerator_1 = Polynomial(numerator_1, self.Rq)
 
-        t = self.Rt.modulus
-        q = self.Rq.modulus
+        t = self.Rt.Q
+        q = self.Rq.Q
 
         numerator = np.polymul(t, numerator_1.coefficients)
 
