@@ -29,8 +29,7 @@ class PolynomialRing:
 		if self.Q is None:
 			raise AssertionError("The modulus Q must be set to sample a polynomial from R_Q")
 
-		# sample a polynomial a_Q with n terms from Z_Q
-		a_Q_coeff = np. random.choice(self.Z_Q, size=self.n)
+		a_Q_coeff = np.random.choice(self.Z_Q, size=self.n)
 
 		return Polynomial(a_Q_coeff, self)
 
@@ -40,7 +39,6 @@ class Polynomial:
 
 		# apply redution to the ring
 		remainder = reduce_coefficients(coefficients, self.ring)
-
 		self.coefficients = remainder
 
 def reduce_coefficients(coefficients, ring):
@@ -52,17 +50,19 @@ def reduce_coefficients(coefficients, ring):
 		for i in range(len(remainder)):
 			remainder[i] = custom_modulo(remainder[i], ring.Q)
 
-	# ensure that the coefficients are in the set Z_Q wich is defined as (-Q/2, Q/2]
-	Z_Q_set = set(j for j in range(-ring.Q//2 + 1, ring.Q//2+1))
-	for value in remainder:
-		assert value in Z_Q_set, "Coefficients must be in Z_Q"
+		# ensure that the coefficients are in the set Z_Q wich is defined as (-Q/2, Q/2]
+		Z_Q_set = set(j for j in range(-ring.Q//2 + 1, ring.Q//2+1))
+		for value in remainder:
+			assert value in Z_Q_set, "Coefficients must be in Z_Q"
+
+	return remainder
 
 def custom_modulo(x, mod):
 	# when mod = 7, the field is {-3, -2, -1, 0, 1, 2, 3}
 	# if x = 10, mod = 7, then r = 3
 	# if x = 11, mod = 7, then r = 4, which is divisible by 2 so final r will be 4 - 7 = -3
 	r = x % mod
-	return r if r <= mod /2 else r - mod
+	return r if r <= mod / 2 else r - mod
 
 
 
