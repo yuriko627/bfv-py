@@ -31,7 +31,6 @@ class DiscreteGaussian:
 		Parameters:
 		size: Number of samples to generate
 
-		Returns:
-		return: NumPy array of generated samples
+		Returns: NumPy array of generated samples
 		"""
 		return np.random.choice(self.x, size=size, p=self.prob)
