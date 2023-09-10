@@ -86,7 +86,7 @@ class RLWE:
         pk1 = np.polymul(a.coefficients, [-1])
         pk1 = Polynomial(pk1, self.Rq)
 
-		# public_key = (b, -a)
+        # public_key = (b, -a)
         public_key = (pk0, pk1)
 
         return public_key
@@ -108,7 +108,7 @@ class RLWE:
         q = self.Rq.Q
         t = self.Rt.Q
 
-		# Sample polynomials e0, e1 from the distribution χ Error
+        # Sample polynomials e0, e1 from the distribution χ Error
         e0 = self.SampleFromChiErrorDistribution()
 
         # Ensure that all the errors e < q/2t - 1/2
@@ -121,32 +121,32 @@ class RLWE:
         for e in e1.coefficients:
             assert abs(e) < (q/2/t - 1/2), f"Error value of |e1|: {e} is too big, dycryption won't work"
 
-		# Sample polynomial u from the distribution χ Key
+        # Sample polynomial u from the distribution χ Key
         u = self.SampleFromChiKeyDistribution()
 
-		# delta = q/t
+        # delta = q/t
         delta = q / t
 
         # Round delta to the lower integer
         delta = math.floor(delta)
 
         # Compute the ciphertext.
-		# delta * m
+        # delta * m
         delta_m = np.polymul(delta, m.coefficients)
-		# pk0 * u
+        # pk0 * u
         pk0_u = np.polymul(public_key[0].coefficients, u.coefficients)
 
-		# delta * m + pk0 * u + e0
+        # delta * m + pk0 * u + e0
         ct_0 = np.polyadd(delta_m, pk0_u)
         ct_0 = np.polyadd(ct_0, e0.coefficients)
 
         # ct_0 will be in Rq
         ct_0 = Polynomial(ct_0, self.Rq)
 
-		# pk1 * u
+        # pk1 * u
         pk1_u = np.polymul(public_key[1].coefficients, u.coefficients)
 
-		# pk1 * u + e1
+        # pk1 * u + e1
         ct_1 = np.polyadd(pk1_u, e1.coefficients)
 
         # The result will be in Rq
@@ -169,7 +169,7 @@ class RLWE:
         ct0 = ciphertext[0].coefficients
         ct1_s = np.polymul(ciphertext[1].coefficients, secret_key.coefficients)
 
-		# ct0 + ct1*s
+        # ct0 + ct1*s
         numerator_1 = np.polyadd(ct0, ct1_s)
 
         # Numerator 1 is in Rq.
