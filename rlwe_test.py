@@ -11,7 +11,7 @@ class TestRLWE(unittest.TestCase):
     def setUp(self):
         self.n = 4
         self.q = 700
-        self.sigma = 6
+        self.sigma = 10
         self.discrete_gaussian = DiscreteGaussian(self.sigma)
         self.t = 7
         # Note that t and q do not have to be prime nor coprime.
@@ -77,6 +77,9 @@ class TestRLWE(unittest.TestCase):
         # Ensure that the secret key is a polynomial in ring R
         self.assertEqual(secret_key.ring, self.rlwe.R)
 
+        # Ensure that the coefficients of the key are within {-1, 0, 1}
+        for coeff in secret_key.coefficients:
+            self.assertTrue(coeff == -1 or coeff == 0 or coeff == 1)
 
     def test_public_key_gen(self):
         secret_key = self.rlwe.SecretKeyGen()
@@ -97,8 +100,18 @@ class TestRLWE(unittest.TestCase):
         self.assertEqual(public_key[0].ring, self.rlwe.Rq)
         self.assertEqual(public_key[1].ring, self.rlwe.Rq)
 
-    def test_error_encryption(self):
+        # TODO: add public key's value check
 
+    def test_message_sample(self):
+        secret_key = self.rlwe.SecretKeyGen()
+        public_key = self.rlwe.PublicKeyGen(secret_key)
+
+        message = self.rlwe.Rt.sample_polynomial()
+
+        # Ensure that message is a polynomial in Rt
+        self.assertEqual(message.ring, self.rlwe.Rt)
+
+    def test_wrong_message_sample(self):
         secret_key = self.rlwe.SecretKeyGen()
         public_key = self.rlwe.PublicKeyGen(secret_key)
 
@@ -109,7 +122,6 @@ class TestRLWE(unittest.TestCase):
             self.rlwe.Encrypt(public_key, message)
 
     def test_valid_encryption(self):
-
         secret_key = self.rlwe.SecretKeyGen()
         public_key = self.rlwe.PublicKeyGen(secret_key)
 
@@ -127,8 +139,9 @@ class TestRLWE(unittest.TestCase):
         self.assertEqual(ciphertext[0].ring, self.rlwe.Rq)
         self.assertEqual(ciphertext[1].ring, self.rlwe.Rq)
 
-    def test_valid_decryption(self):
+        ## TODO: add ciphertext value check
 
+    def test_valid_decryption(self):
         secret_key = self.rlwe.SecretKeyGen()
         public_key = self.rlwe.PublicKeyGen(secret_key)
 
@@ -146,8 +159,9 @@ class TestRLWE(unittest.TestCase):
 
         # ensure that message and dec are of the same coefficients
         for i in range(len(message.coefficients)):
+            print(message.coefficients[i])
+            print(dec.coefficients[i])
             self.assertEqual(message.coefficients[i], dec.coefficients[i])
-
 
 if __name__ == "__main__":
     unittest.main()

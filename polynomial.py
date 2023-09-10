@@ -23,7 +23,7 @@ class PolynomialRing:
 
 	def sample_polynomial(self):
 		"""
-		Sample polynomial a_Q from U_Q: uniform distribution over R_Q.
+		Sample polynomial a_Q from R_Q.
 		"""
 		# ensure that modulus is set
 		if self.Q is None:

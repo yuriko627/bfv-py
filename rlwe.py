@@ -65,10 +65,10 @@ class RLWE:
         Returns: Generated public key.
         """
         # Sample a polynomial a from Rq
-        a = self.Rq.sample_polynomial()
+        a = self.Rq.sample_polynomial() # TODO: what is this distribution? is it correct?
 
         # Sample a polynomial e from the distribution χ Error
-        e = self.SampleFromChiErrorDistribution()
+        e = self.SampleFromChiErrorDistribution() # TODO: what is this distribution? is it correct?
 
         # a*s. The result will be in Rq
         mul = np.polymul(a.coefficients, secret_key.coefficients)
@@ -80,14 +80,13 @@ class RLWE:
 
         b = Polynomial(b, self.Rq)
 
-        # pk_0 = -b. The result will be in Rq
-        pk0 = np.polymul(b.coefficients, [-1])
+        pk0 = b
 
-        pk0 = Polynomial(pk0, self.Rq)
+        # pk1 = -a. The result will be in Rq
+        pk1 = np.polymul(a.coefficients, [-1])
+        pk1 = Polynomial(pk1, self.Rq)
 
-        pk1 = a
-
-		# public_key = (-b, a)
+		# public_key = (b, -a)
         public_key = (pk0, pk1)
 
         return public_key
@@ -106,15 +105,27 @@ class RLWE:
         if m.ring != self.Rt:
             raise AssertionError("The message must be in Rt.")
 
+        q = self.Rq.Q
+        t = self.Rt.Q
+
 		# Sample polynomials e0, e1 from the distribution χ Error
         e0 = self.SampleFromChiErrorDistribution()
+
+        # Ensure that all the errors e < q/2t - 1/2
+        for e in e0.coefficients:
+            assert abs(e) < (q/2/t - 1/2), f"Error value of |e0|: {e} is too big, dycryption won't work"
+
         e1 = self.SampleFromChiErrorDistribution()
+
+        # Ensure that all the errors e < q/2t - 1/2
+        for e in e1.coefficients:
+            assert abs(e) < (q/2/t - 1/2), f"Error value of |e1|: {e} is too big, dycryption won't work"
 
 		# Sample polynomial u from the distribution χ Key
         u = self.SampleFromChiKeyDistribution()
 
 		# delta = q/t
-        delta = self.Rq.Q / self.Rt.Q
+        delta = q / t
 
         # Round delta to the lower integer
         delta = math.floor(delta)
