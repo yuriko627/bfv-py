@@ -3,7 +3,7 @@ import numpy as np
 from discrete_gauss import DiscreteGaussian
 
 class TestDiscreteGaussian(unittest.TestCase):
-	def SetUp(self):
+	def setUp(self):
 		self.sigma = 3
 		self.gaussian = DiscreteGaussian(self.sigma)
 
@@ -13,7 +13,7 @@ class TestDiscreteGaussian(unittest.TestCase):
 
 	def test_probability_distribution(self):
 		# ensure probabilities sum up to approximately 1 (due to floating-poitn precision)
-		self.assertAlmostEqual(self.gaussian.prob.sum())
+		self.assertAlmostEqual(self.gaussian.prob.sum(), 1, places=5)
 
 	def test_sampling(self):
 		# sample a large number of times and check if the mean is approximately 0 (exptected for this setup)

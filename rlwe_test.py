@@ -1,10 +1,7 @@
 import unittest
 from discrete_gauss import DiscreteGaussian
-from polynomial import PolynomialRing, Polynomial, custom_modulo
+from polynomial import PolynomialRing, Polynomial
 from rlwe import RLWE
-import math
-import random
-import numpy as np
 
 class TestRLWE(unittest.TestCase):
 
@@ -152,16 +149,13 @@ class TestRLWE(unittest.TestCase):
         dec = self.rlwe.Decrypt(secret_key, ciphertext, error)
 
         # ensure that message and dec are of the same degree
-        self.assertEqual(len(message.coefficients), len(dec.coefficients))
-
-        # ensure that message and dec are of the same ring
-        self.assertEqual(message.ring, dec.ring)
+        self.assertEqual(len(message.coefficients), len(dec))
 
         # ensure that message and dec are of the same coefficients
         for i in range(len(message.coefficients)):
             print(message.coefficients[i])
-            print(dec.coefficients[i])
-            self.assertEqual(message.coefficients[i], dec.coefficients[i])
+            print(dec[i])
+            self.assertEqual(message.coefficients[i], dec[i])
 
 if __name__ == "__main__":
     unittest.main()
