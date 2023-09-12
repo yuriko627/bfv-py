@@ -1,4 +1,4 @@
-from polynomial import PolynomialRing, Polynomial, custom_modulo
+from polynomial import PolynomialRing, Polynomial
 from discrete_gauss import DiscreteGaussian
 import math
 import numpy as np

@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from polynomial import PolynomialRing, Polynomial, custom_modulo
+from polynomial import PolynomialRing, Polynomial, get_centered_remainder
 
 class TestPolynomialRing(unittest.TestCase):
 	def test_init_with_n(self):
@@ -164,7 +164,7 @@ class TestPolynomialInRingRq(unittest.TestCase):
 
         # 2nd reduction
         for i in range(len(remainder)):
-            remainder[i] = custom_modulo(remainder[i], Rq.Q)
+            remainder[i] = get_centered_remainder(remainder[i], Rq.Q)
 
         aq1 = Polynomial(coefficients_1, Rq)
 
@@ -239,22 +239,22 @@ class TestPolynomialInRingRq(unittest.TestCase):
 class TestCustomModulo(unittest.TestCase):
 
     def test_positive_values(self):
-        self.assertEqual(custom_modulo(7, 10), -3)  # 7 % 10. Lies in the range (-5, 5]
-        self.assertEqual(custom_modulo(15, 10), 5) # 15 % 10 = 5, which is <= 5
-        self.assertEqual(custom_modulo(17, 10), -3) # 17 % 10 = 7, which is > 5. So, 7 - 10 = -3
+        self.assertEqual(get_centered_remainder(7, 10), -3)  # 7 % 10. Lies in the range (-5, 5]
+        self.assertEqual(get_centered_remainder(15, 10), 5) # 15 % 10 = 5, which is <= 5
+        self.assertEqual(get_centered_remainder(17, 10), -3) # 17 % 10 = 7, which is > 5. So, 7 - 10 = -3
 
     def test_negative_values(self):
-        self.assertEqual(custom_modulo(-7, 10), 3) # Lies in the range (-5, 5]
-        self.assertEqual(custom_modulo(-15, 10), 5) # -15 % 10 = 5 (in Python, % returns non-negative), which is <= 5
-        self.assertEqual(custom_modulo(-17, 10), 3) # -17 % 10 = 3, which is <= 5
+        self.assertEqual(get_centered_remainder(-7, 10), 3) # Lies in the range (-5, 5]
+        self.assertEqual(get_centered_remainder(-15, 10), 5) # -15 % 10 = 5 (in Python, % returns non-negative), which is <= 5
+        self.assertEqual(get_centered_remainder(-17, 10), 3) # -17 % 10 = 3, which is <= 5
 
     def test_boundary_values(self):
         q = 7
-        self.assertEqual(custom_modulo(-q//2 + 1, q), -q//2 + 1) # The smallest positive number in the range
-        self.assertEqual(custom_modulo(q//2, q), q//2) # The largest number in the range
+        self.assertEqual(get_centered_remainder(-q//2 + 1, q), -q//2 + 1) # The smallest positive number in the range
+        self.assertEqual(get_centered_remainder(q//2, q), q//2) # The largest number in the range
 
     def test_zero(self):
-        self.assertEqual(custom_modulo(0, 10), 0) # 0 lies in the range (-5, 5]
+        self.assertEqual(get_centered_remainder(0, 10), 0) # 0 lies in the range (-5, 5]
 
 if __name__ == "__main__":
     unittest.main()

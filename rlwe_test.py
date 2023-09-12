@@ -1,10 +1,7 @@
 import unittest
 from discrete_gauss import DiscreteGaussian
-from polynomial import PolynomialRing, Polynomial, custom_modulo
+from polynomial import PolynomialRing, Polynomial
 from rlwe import RLWE
-import math
-import random
-import numpy as np
 
 class TestRLWE(unittest.TestCase):
 

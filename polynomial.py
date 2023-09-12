@@ -48,7 +48,7 @@ def reduce_coefficients(coefficients, ring):
 	# if the ring is R_Q, apply reduction by taking coeff mod Q
 	if ring.Q is not None:
 		for i in range(len(remainder)):
-			remainder[i] = custom_modulo(remainder[i], ring.Q)
+			remainder[i] = get_centered_remainder(remainder[i], ring.Q)
 
 		# ensure that the coefficients are in the set Z_Q wich is defined as (-Q/2, Q/2]
 		Z_Q_set = set(j for j in range(-ring.Q//2 + 1, ring.Q//2+1))
@@ -57,12 +57,16 @@ def reduce_coefficients(coefficients, ring):
 
 	return remainder
 
-def custom_modulo(x, mod):
-	# when mod = 7, the field is {-3, -2, -1, 0, 1, 2, 3}
-	# if x = 10, mod = 7, then r = 3
-	# if x = 11, mod = 7, then r = 4, which is divisible by 2 so final r will be 4 - 7 = -3
-	r = x % mod
-	return r if r <= mod / 2 else r - mod
+def get_centered_remainder(x, modulus):
+    # The concept of the centered remainder is that after performing the modulo operation,
+    # The result is in the set (-modulus/2, ..., modulus/2], rather than [0, ..., modulus-1].
+    # If r is in range [0, modulus/2] then the centered remainder is r.
+    # If r is in range [modulus/2 + 1, modulus-1] then the centered remainder is r - modulus.
+    # If modulus is 7, then the field is {-3, -2, -1, 0, 1, 2, 3}.
+    # 10 % 7 = 3. The centered remainder is 3.
+    # 11 % 7 = 4. The centered remainder is 4 - 7 = -3.
+    r = x % modulus
+    return r if r <= modulus / 2 else r - modulus
 
 
 
