@@ -204,7 +204,7 @@ class RLWE:
         # For each coefficient of the numerator, divide it by q and round it to the nearest integer
         quotient = [round(coeff / q) for coeff in numerator]
 
-        # resulting polynomial is in Rt
-        quotient = Polynomial(quotient, self.Rt)
+        # trim leading zeros
+        quotient = np.trim_zeros(quotient, 'f')
 
         return quotient
