@@ -23,6 +23,12 @@ class RLWE:
         self.Rt = PolynomialRing(n, t)
         self.distribution = distribution
 
+        # Sample error polynomial from the distribution χ Key
+        self.e = self.SampleFromChiErrorDistribution() ## used in public key gen
+
+        # Sample ephemeral key polynomial u from the distribution χ Key
+        self.u = self.SampleFromChiKeyDistribution()
+
     def SampleFromChiKeyDistribution(self):
         """
         Sample a polynomial from the χ Key distribution.
@@ -67,8 +73,6 @@ class RLWE:
         # Sample a polynomial a from Rq
         a = self.Rq.sample_polynomial() # TODO: what is this distribution? is it correct?
 
-        # Sample a polynomial e from the distribution χ Error
-        e = self.SampleFromChiErrorDistribution() # TODO: what is this distribution? is it correct?
 
         # a*s. The result will be in Rq
         mul = np.polymul(a.coefficients, secret_key.coefficients)
@@ -76,7 +80,7 @@ class RLWE:
         mul = Polynomial(mul, self.Rq)
 
         # a*s + e. The result will be in Rq
-        b = np.polyadd(mul.coefficients, e.coefficients)
+        b = np.polyadd(mul.coefficients, self.e.coefficients)
 
         b = Polynomial(b, self.Rq)
 
@@ -99,7 +103,9 @@ class RLWE:
         public_key: Public key.
         m: message.
 
-        Returns: Generated ciphertext.
+        Returns:
+        ciphertext: Generated ciphertext.
+        error: tuple of error values used in encryption.
         """
         # Ensure that the message is in Rt
         if m.ring != self.Rt:
@@ -111,18 +117,15 @@ class RLWE:
         # Sample polynomials e0, e1 from the distribution χ Error
         e0 = self.SampleFromChiErrorDistribution()
 
-        # Ensure that all the errors e < q/2t - 1/2
-        for e in e0.coefficients:
-            assert abs(e) < (q/2/t - 1/2), f"Error value of |e0|: {e} is too big, dycryption won't work"
+        # Ensure that all the errors e < q/(2t) - 1/2
+        #for e in e0.coefficients:
+        #    assert abs(e) < (q/2/t - 1/2), f"Error value of |e0|: {e} is too big, dycryption won't work"
 
         e1 = self.SampleFromChiErrorDistribution()
 
-        # Ensure that all the errors e < q/2t - 1/2
-        for e in e1.coefficients:
-            assert abs(e) < (q/2/t - 1/2), f"Error value of |e1|: {e} is too big, dycryption won't work"
-
-        # Sample polynomial u from the distribution χ Key
-        u = self.SampleFromChiKeyDistribution()
+        # Ensure that all the errors e < q/(2t) - 1/2
+        #for e in e1.coefficients:
+        #    assert abs(e) < (q/2/t - 1/2), f"Error value of |e1|: {e} is too big, dycryption won't work"
 
         # delta = q/t
         delta = q / t
@@ -134,7 +137,7 @@ class RLWE:
         # delta * m
         delta_m = np.polymul(delta, m.coefficients)
         # pk0 * u
-        pk0_u = np.polymul(public_key[0].coefficients, u.coefficients)
+        pk0_u = np.polymul(public_key[0].coefficients, self.u.coefficients)
 
         # delta * m + pk0 * u + e0
         ct_0 = np.polyadd(delta_m, pk0_u)
@@ -144,7 +147,7 @@ class RLWE:
         ct_0 = Polynomial(ct_0, self.Rq)
 
         # pk1 * u
-        pk1_u = np.polymul(public_key[1].coefficients, u.coefficients)
+        pk1_u = np.polymul(public_key[1].coefficients, self.u.coefficients)
 
         # pk1 * u + e1
         ct_1 = np.polyadd(pk1_u, e1.coefficients)
@@ -153,9 +156,11 @@ class RLWE:
         ct_1 = Polynomial(ct_1, self.Rq)
 
         ciphertext = (ct_0, ct_1)
-        return ciphertext
+        error = (e0, e1)
 
-    def Decrypt(self, secret_key: Polynomial, ciphertext: (Polynomial, Polynomial)):
+        return ciphertext, error
+
+    def Decrypt(self, secret_key: Polynomial, ciphertext: (Polynomial, Polynomial), error: (Polynomial, Polynomial)):
         """
         Decrypt a given ciphertext with a given secret key.
 
@@ -167,16 +172,32 @@ class RLWE:
         """
         # dec = round(t/q * ((ct0 + ct1*s) mod s)
         ct0 = ciphertext[0].coefficients
-        ct1_s = np.polymul(ciphertext[1].coefficients, secret_key.coefficients)
+        ct1 = ciphertext[1].coefficients
+        s = secret_key.coefficients
+        t = self.Rt.Q
+        q = self.Rq.Q
+
+        ct1_s = np.polymul(ct1, s)
 
         # ct0 + ct1*s
         numerator_1 = np.polyadd(ct0, ct1_s)
 
+        # Ensure that all the errors v < q/(2t) - 1/2
+        # v = u * e + e0 + s * e_1
+        u_e = np.polymul(self.u.coefficients, self.e.coefficients)
+        s_e1 = np.polymul(s, error[1].coefficients)
+
+        v = np.polyadd(u_e, error[0].coefficients)
+        v = np.polyadd(v, s_e1)
+
+        # fresh error v is in Rq
+        v = Polynomial(v, self.Rq)
+
+        for v in v.coefficients:
+            assert abs(v) < (q/2/t - 1/2), f"Error value of v: {v} is too big, dycryption won't work"
+
         # Numerator 1 is in Rq.
         numerator_1 = Polynomial(numerator_1, self.Rq)
-
-        t = self.Rt.Q
-        q = self.Rq.Q
 
         numerator = np.polymul(t, numerator_1.coefficients)
 

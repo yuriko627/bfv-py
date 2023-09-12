@@ -127,7 +127,7 @@ class TestRLWE(unittest.TestCase):
 
         message = self.rlwe.Rt.sample_polynomial()
 
-        ciphertext = self.rlwe.Encrypt(public_key, message)
+        ciphertext, error = self.rlwe.Encrypt(public_key, message)
 
         # Ensure that the coefficients of the public key are within Z_q = (-q/2, q/2]
         for coeff in ciphertext[0].coefficients:
@@ -147,9 +147,9 @@ class TestRLWE(unittest.TestCase):
 
         message = self.rlwe.Rt.sample_polynomial()
 
-        ciphertext = self.rlwe.Encrypt(public_key, message)
+        ciphertext, error = self.rlwe.Encrypt(public_key, message)
 
-        dec = self.rlwe.Decrypt(secret_key, ciphertext)
+        dec = self.rlwe.Decrypt(secret_key, ciphertext, error)
 
         # ensure that message and dec are of the same degree
         self.assertEqual(len(message.coefficients), len(dec.coefficients))
