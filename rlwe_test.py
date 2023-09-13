@@ -2,13 +2,14 @@ import unittest
 from discrete_gauss import DiscreteGaussian
 from polynomial import PolynomialRing, Polynomial
 from rlwe import RLWE
+import time
 
 class TestRLWE(unittest.TestCase):
 
     def setUp(self):
-        self.n = 1024
-        self.q = 2 ** 29
-        self.sigma = 3
+        self.n = 4
+        self.q = 700
+        self.sigma = 10
         self.discrete_gaussian = DiscreteGaussian(self.sigma)
         self.t = 7
         # Note that t and q do not have to be prime nor coprime.
@@ -141,21 +142,74 @@ class TestRLWE(unittest.TestCase):
     def test_valid_decryption(self):
         secret_key = self.rlwe.SecretKeyGen()
 
-        print("secret_key: ", secret_key.coefficients)
-
         public_key = self.rlwe.PublicKeyGen(secret_key)
-
-        print("public_key: ", public_key[0].coefficients)
 
         message = self.rlwe.Rt.sample_polynomial()
 
+        ciphertext, error = self.rlwe.Encrypt(public_key, message)
+
+        dec = self.rlwe.Decrypt(secret_key, ciphertext, error)
+
+        # ensure that message and dec are of the same degree
+        self.assertEqual(len(message.coefficients), len(dec.coefficients))
+
+        # ensure that message and dec are of the same coefficients
+        for i in range(len(message.coefficients)):
+            self.assertEqual(message.coefficients[i], dec.coefficients[i])
+
+    def test_valid_decryption_real_world_params(self):
+        n = 1024
+        q = 2 ** 29
+        sigma = 3
+        discrete_gaussian = DiscreteGaussian(sigma)
+        t = 7
+        rlwe = RLWE(n, q, t, discrete_gaussian)
+
+        start_time = time.time() 
+        
+        secret_key = rlwe.SecretKeyGen()
+
+        end_time = time.time() 
+        elapsed_time = end_time - start_time
+        
+        print(f"Time to generate secret key: {elapsed_time:.6f} seconds")
+
+        print("secret_key: ", secret_key.coefficients)
+
+        start_time = time.time() 
+
+        public_key = rlwe.PublicKeyGen(secret_key)
+
+        end_time = time.time() 
+        elapsed_time = end_time - start_time
+        
+        print(f"Time to generate public key: {elapsed_time:.6f} seconds")
+
+        print("public_key: ", public_key[0].coefficients)
+
+        message = rlwe.Rt.sample_polynomial()
+
         print("message: ", message.coefficients)
 
-        ciphertext, error = self.rlwe.Encrypt(public_key, message)
+        start_time = time.time() 
+
+        ciphertext, error = rlwe.Encrypt(public_key, message)
+
+        end_time = time.time() 
+        elapsed_time = end_time - start_time
+        
+        print(f"Time to encrypt the message: {elapsed_time:.6f} seconds")
 
         print("ciphertext: ", ciphertext[0].coefficients)
 
-        dec = self.rlwe.Decrypt(secret_key, ciphertext, error)
+        start_time = time.time() 
+
+        dec = rlwe.Decrypt(secret_key, ciphertext, error)
+
+        end_time = time.time() 
+        elapsed_time = end_time - start_time
+        
+        print(f"Time to decrypt the message: {elapsed_time:.6f} seconds")
 
         print("dec: ", dec.coefficients)
 
