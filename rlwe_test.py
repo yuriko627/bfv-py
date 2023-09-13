@@ -49,7 +49,7 @@ class TestRLWE(unittest.TestCase):
 
     def test_sample_from_chi_error_distribution(self):
         error = self.rlwe.SampleFromChiErrorDistribution()
-        # Ensure that the degree of the sampled poly is equal or less than d (it might be less if the leading coefficient sampled is 0)
+        # Ensure that the degree of the sample polynomial is at most n-1, which means the has at most n coefficients
         count = 0
         for coeff in error.coefficients:
             count += 1
@@ -65,7 +65,7 @@ class TestRLWE(unittest.TestCase):
 
     def test_secret_key_gen(self):
         secret_key = self.rlwe.SecretKeyGen()
-        # Ensure that the degree of the sampled secret is equal or less than d (it might be less if the leading coefficient sampled is 0)
+        # Ensure that the degree of the sample polynomial is at most n-1, which means the has at most n coefficients
         count = 0
         for coeff in secret_key.coefficients:
             count += 1
@@ -149,13 +149,11 @@ class TestRLWE(unittest.TestCase):
         dec = self.rlwe.Decrypt(secret_key, ciphertext, error)
 
         # ensure that message and dec are of the same degree
-        self.assertEqual(len(message.coefficients), len(dec))
+        self.assertEqual(len(message.coefficients), len(dec.coefficients))
 
         # ensure that message and dec are of the same coefficients
         for i in range(len(message.coefficients)):
-            print(message.coefficients[i])
-            print(dec[i])
-            self.assertEqual(message.coefficients[i], dec[i])
+            self.assertEqual(message.coefficients[i], dec.coefficients[i])
 
 if __name__ == "__main__":
     unittest.main()

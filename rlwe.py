@@ -17,13 +17,23 @@ class RLWE:
         # Ensure that the modulus of the plaintext space is smaller than the modulus of the polynomial ring
         if t > q:
             raise ValueError("The modulus of the plaintext space must be smaller than the modulus of the polynomial ring.")
+        
+        # Ensure that n is a power of 2
+        assert n > 0 and (n & (n-1)) == 0, "n must be a power of 2"
+
+        # Ensure that p and q are greater than 1
+        assert q > 1, "modulus q must be > 1"
+        assert t > 1, "modulus t must be > 1"
+
+        # Ensure that t is a prime number
+        assert self.is_prime(t), "modulus t must be a prime number"
 
         self.R = PolynomialRing(n)
         self.Rq = PolynomialRing(n, q)
         self.Rt = PolynomialRing(n, t)
         self.distribution = distribution
 
-        # Sample error polynomial from the distribution χ Key
+        # Sample error polynomial from the distribution χ Error
         self.e = self.SampleFromChiErrorDistribution() ## used in public key gen
 
         # Sample ephemeral key polynomial u from the distribution χ Key
@@ -73,9 +83,11 @@ class RLWE:
         # Sample a polynomial a from Rq
         a = self.Rq.sample_polynomial() # TODO: what is this distribution? is it correct?
 
-
         # a*s. The result will be in Rq
         mul = np.polymul(a.coefficients, secret_key.coefficients)
+
+        # assert that the degree of mul is at most 2 * (n - 1). Namely, the number of coefficients is at most 2 * n
+        assert len(mul) <= 2 * self.R.n, f"The degree of mul is {len(mul)} which is greater than 2 * (n - 1) = {2 * self.R.n}"
 
         mul = Polynomial(mul, self.Rq)
 
@@ -83,7 +95,6 @@ class RLWE:
         b = np.polyadd(mul.coefficients, self.e.coefficients)
 
         b = Polynomial(b, self.Rq)
-
         pk0 = b
 
         # pk1 = -a. The result will be in Rq
@@ -193,8 +204,13 @@ class RLWE:
         # fresh error v is in Rq
         v = Polynomial(v, self.Rq)
 
+        rt_Q = q % t
+
+        threshold = q/(2*t) - rt_Q/2
+
+
         for v in v.coefficients:
-            assert abs(v) < (q/2/t - 1/2), f"Error value of v: {v} is too big, dycryption won't work"
+            assert abs(v) < (threshold), f"Noise {abs(v)} exceeds the threshold value {threshold}, decryption won't work"
 
         # Numerator 1 is in Rq.
         numerator_1 = Polynomial(numerator_1, self.Rq)
@@ -207,4 +223,15 @@ class RLWE:
         # trim leading zeros
         quotient = np.trim_zeros(quotient, 'f')
 
+        # quotient is in Rt
+        quotient = Polynomial(quotient, self.Rt)
+
         return quotient
+    
+    def is_prime(self, n):
+        if n < 2:
+            return False
+        for i in range(2, n):
+            if n % i == 0:
+                return False
+        return True
