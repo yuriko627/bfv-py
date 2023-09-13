@@ -6,9 +6,9 @@ from rlwe import RLWE
 class TestRLWE(unittest.TestCase):
 
     def setUp(self):
-        self.n = 4
-        self.q = 700
-        self.sigma = 10
+        self.n = 1024
+        self.q = 2 ** 29
+        self.sigma = 3
         self.discrete_gaussian = DiscreteGaussian(self.sigma)
         self.t = 7
         # Note that t and q do not have to be prime nor coprime.
@@ -140,13 +140,24 @@ class TestRLWE(unittest.TestCase):
 
     def test_valid_decryption(self):
         secret_key = self.rlwe.SecretKeyGen()
+
+        print("secret_key: ", secret_key.coefficients)
+
         public_key = self.rlwe.PublicKeyGen(secret_key)
+
+        print("public_key: ", public_key[0].coefficients)
 
         message = self.rlwe.Rt.sample_polynomial()
 
+        print("message: ", message.coefficients)
+
         ciphertext, error = self.rlwe.Encrypt(public_key, message)
 
+        print("ciphertext: ", ciphertext[0].coefficients)
+
         dec = self.rlwe.Decrypt(secret_key, ciphertext, error)
+
+        print("dec: ", dec.coefficients)
 
         # ensure that message and dec are of the same degree
         self.assertEqual(len(message.coefficients), len(dec.coefficients))
