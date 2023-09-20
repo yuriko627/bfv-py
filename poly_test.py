@@ -31,12 +31,12 @@ class TestPolynomialRing(unittest.TestCase):
 
 	def test_sample_poly_from_rq(self):
 		n = 4
-		q = 7
+		q = 8
 		Rq = PolynomialRing(n, q)
 		aq1 = Rq.sample_polynomial()
 		aq2 = Rq.sample_polynomial()
 
-		# Ensure that the coefficients of the polynomial are within Z_q = (-q/2, q/2]
+		# Ensure that the coefficients of the polynomial are within Z_q = [-q/2, q/2)
 		for coeff in aq1.coefficients:
 			self.assertTrue(coeff >= -q // 2 and coeff <= q // 2)
 		for coeff in aq2.coefficients:
@@ -63,6 +63,10 @@ class TestPolynomialInRingR(unittest.TestCase):
         # a is the polynomial in R reduced by the quotient polynomial
         a = Polynomial(coefficients, R)
         self.assertTrue(np.array_equal(a.coefficients, [6, 6, 4, -1]))
+
+        # The degree of resulting poly should be less than the degree of fx
+        self.assertTrue(len(a.coefficients) < len(a.ring.denominator))
+
         # After reduction, the polynomial should not be multiple of the quotient
         _, remainder = np.polydiv(a.coefficients, a.ring.denominator)
         self.assertTrue(np.array_equal(remainder, a.coefficients))

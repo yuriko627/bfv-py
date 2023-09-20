@@ -2,6 +2,7 @@ import unittest
 from discrete_gauss import DiscreteGaussian
 from polynomial import PolynomialRing, Polynomial
 from rlwe import RLWE
+import time
 
 class TestRLWE(unittest.TestCase):
 
@@ -49,7 +50,7 @@ class TestRLWE(unittest.TestCase):
 
     def test_sample_from_chi_error_distribution(self):
         error = self.rlwe.SampleFromChiErrorDistribution()
-        # Ensure that the degree of the sampled poly is equal or less than d (it might be less if the leading coefficient sampled is 0)
+        # Ensure that the degree of the sample polynomial is at most n-1, which means the has at most n coefficients
         count = 0
         for coeff in error.coefficients:
             count += 1
@@ -65,7 +66,7 @@ class TestRLWE(unittest.TestCase):
 
     def test_secret_key_gen(self):
         secret_key = self.rlwe.SecretKeyGen()
-        # Ensure that the degree of the sampled secret is equal or less than d (it might be less if the leading coefficient sampled is 0)
+        # Ensure that the degree of the sample polynomial is at most n-1, which means the has at most n coefficients
         count = 0
         for coeff in secret_key.coefficients:
             count += 1
@@ -140,6 +141,7 @@ class TestRLWE(unittest.TestCase):
 
     def test_valid_decryption(self):
         secret_key = self.rlwe.SecretKeyGen()
+
         public_key = self.rlwe.PublicKeyGen(secret_key)
 
         message = self.rlwe.Rt.sample_polynomial()
@@ -149,13 +151,74 @@ class TestRLWE(unittest.TestCase):
         dec = self.rlwe.Decrypt(secret_key, ciphertext, error)
 
         # ensure that message and dec are of the same degree
-        self.assertEqual(len(message.coefficients), len(dec))
+        self.assertEqual(len(message.coefficients), len(dec.coefficients))
 
         # ensure that message and dec are of the same coefficients
         for i in range(len(message.coefficients)):
-            print(message.coefficients[i])
-            print(dec[i])
-            self.assertEqual(message.coefficients[i], dec[i])
+            self.assertEqual(message.coefficients[i], dec.coefficients[i])
+
+    def test_valid_decryption_real_world_params(self):
+        n = 1024
+        q = 2 ** 29
+        sigma = 3
+        discrete_gaussian = DiscreteGaussian(sigma)
+        t = 7
+        rlwe = RLWE(n, q, t, discrete_gaussian)
+
+        start_time = time.time() 
+        
+        secret_key = rlwe.SecretKeyGen()
+
+        end_time = time.time() 
+        elapsed_time = end_time - start_time
+        
+        print(f"Time to generate secret key: {elapsed_time:.6f} seconds")
+
+        print("secret_key: ", secret_key.coefficients)
+
+        start_time = time.time() 
+
+        public_key = rlwe.PublicKeyGen(secret_key)
+
+        end_time = time.time() 
+        elapsed_time = end_time - start_time
+        
+        print(f"Time to generate public key: {elapsed_time:.6f} seconds")
+
+        print("public_key: ", public_key[0].coefficients)
+
+        message = rlwe.Rt.sample_polynomial()
+
+        print("message: ", message.coefficients)
+
+        start_time = time.time() 
+
+        ciphertext, error = rlwe.Encrypt(public_key, message)
+
+        end_time = time.time() 
+        elapsed_time = end_time - start_time
+        
+        print(f"Time to encrypt the message: {elapsed_time:.6f} seconds")
+
+        print("ciphertext: ", ciphertext[0].coefficients)
+
+        start_time = time.time() 
+
+        dec = rlwe.Decrypt(secret_key, ciphertext, error)
+
+        end_time = time.time() 
+        elapsed_time = end_time - start_time
+        
+        print(f"Time to decrypt the message: {elapsed_time:.6f} seconds")
+
+        print("dec: ", dec.coefficients)
+
+        # ensure that message and dec are of the same degree
+        self.assertEqual(len(message.coefficients), len(dec.coefficients))
+
+        # ensure that message and dec are of the same coefficients
+        for i in range(len(message.coefficients)):
+            self.assertEqual(message.coefficients[i], dec.coefficients[i])
 
 if __name__ == "__main__":
     unittest.main()
