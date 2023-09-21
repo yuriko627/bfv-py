@@ -17,7 +17,7 @@ class RLWE:
         # Ensure that the modulus of the plaintext space is smaller than the modulus of the polynomial ring
         if t > q:
             raise ValueError("The modulus of the plaintext space must be smaller than the modulus of the polynomial ring.")
-        
+
         # Ensure that n is a power of 2
         assert n > 0 and (n & (n-1)) == 0, "n must be a power of 2"
 
@@ -128,15 +128,7 @@ class RLWE:
         # Sample polynomials e0, e1 from the distribution χ Error
         e0 = self.SampleFromChiErrorDistribution()
 
-        # Ensure that all the errors e < q/(2t) - 1/2
-        #for e in e0.coefficients:
-        #    assert abs(e) < (q/2/t - 1/2), f"Error value of |e0|: {e} is too big, dycryption won't work"
-
         e1 = self.SampleFromChiErrorDistribution()
-
-        # Ensure that all the errors e < q/(2t) - 1/2
-        #for e in e1.coefficients:
-        #    assert abs(e) < (q/2/t - 1/2), f"Error value of |e1|: {e} is too big, dycryption won't work"
 
         # delta = q/t
         delta = q / t
@@ -194,7 +186,7 @@ class RLWE:
         numerator_1 = np.polyadd(ct0, ct1_s)
 
         # Ensure that all the errors v < q/(2t) - 1/2
-        # v = u * e + e0 + s * e_1
+        # v = u * e + e0 + s * e1
         u_e = np.polymul(self.u.coefficients, self.e.coefficients)
         s_e1 = np.polymul(s, error[1].coefficients)
 
@@ -227,7 +219,7 @@ class RLWE:
         quotient = Polynomial(quotient, self.Rt)
 
         return quotient
-    
+
     def is_prime(self, n):
         if n < 2:
             return False
