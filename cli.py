@@ -76,7 +76,7 @@ def main(args):
         json.dump({
             'pk0': adjust_negative_coefficients([int(coeff) for coeff in public_key[0].coefficients.tolist()], q),
             'pk1': adjust_negative_coefficients([int(coeff) for coeff in public_key[1].coefficients.tolist()], q),
-            'm': adjust_negative_coefficients([int(coeff) for coeff in message.coefficients.tolist()], t),
+            'm': adjust_negative_coefficients([int(coeff) for coeff in message.coefficients.tolist()], q),
             'u': adjust_negative_coefficients([int(coeff) for coeff in u.coefficients.tolist()], q),
             'e0': adjust_negative_coefficients([int(coeff) for coeff in e0.coefficients.tolist()], q),
             'e1': adjust_negative_coefficients([int(coeff) for coeff in e1.coefficients.tolist()], q),
