@@ -1,5 +1,7 @@
 import argparse
 import json
+
+import numpy as np
 from rlwe import RLWE
 from discrete_gauss import DiscreteGaussian
 import time
@@ -31,8 +33,14 @@ def main(args):
     # Extract u polynomial from the RLWE object
     u = rlwe.u
 
+    # Add zeroes at the beginning of the u polynomial to make it the same degree as the public key
+    u.coefficients = np.concatenate((np.zeros(n - len(u.coefficients)), u.coefficients))
+
     # Generate message (plaintext)
     message = rlwe.Rt.sample_polynomial()
+
+    # Add zeroes at the beginning of the message polynomial to make it the same degree as the public key
+    message.coefficients = np.concatenate((np.zeros(n - len(message.coefficients)), message.coefficients))
 
     encrypt_start_time = time.time()
 
@@ -46,6 +54,10 @@ def main(args):
 
     (c0, c1) = ciphertext
     (e0, e1) = error
+
+    # Add zeroes at the beginning of the e0 polynomial to make it the same degree as the public key
+    e0.coefficients = np.concatenate((np.zeros(n - len(e0.coefficients)), e0.coefficients))
+    e1.coefficients = np.concatenate((np.zeros(n - len(e1.coefficients)), e1.coefficients))
 
     decrypt_start_time = time.time()
     # Decrypt ciphertext
@@ -64,7 +76,7 @@ def main(args):
         json.dump({
             'pk0': adjust_negative_coefficients([int(coeff) for coeff in public_key[0].coefficients.tolist()], q),
             'pk1': adjust_negative_coefficients([int(coeff) for coeff in public_key[1].coefficients.tolist()], q),
-            'm': adjust_negative_coefficients([int(coeff) for coeff in message.coefficients.tolist()], t),
+            'm': adjust_negative_coefficients([int(coeff) for coeff in message.coefficients.tolist()], q),
             'u': adjust_negative_coefficients([int(coeff) for coeff in u.coefficients.tolist()], q),
             'e0': adjust_negative_coefficients([int(coeff) for coeff in e0.coefficients.tolist()], q),
             'e1': adjust_negative_coefficients([int(coeff) for coeff in e1.coefficients.tolist()], q),
@@ -85,3 +97,4 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
     main(args)
+
