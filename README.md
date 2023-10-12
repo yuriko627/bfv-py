@@ -1,6 +1,6 @@
-# BFV-FHE-PY
+# BFV-PY
 
-Python implementation of the BFV-FHE scheme.
+Python implementation of the BFV scheme of FHE.
 
 ### Resources
 
