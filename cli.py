@@ -82,6 +82,7 @@ def main(args):
             'e1': adjust_negative_coefficients([int(coeff) for coeff in e1.coefficients.tolist()], q),
             'c0': adjust_negative_coefficients([int(coeff) for coeff in c0.coefficients.tolist()], q),
             'c1': adjust_negative_coefficients([int(coeff) for coeff in c1.coefficients.tolist()], q),
+            'cyclo': adjust_negative_coefficients([int(coeff) for coeff in rlwe.Rq.denominator], q),
         }, f)
 
 def adjust_negative_coefficients(coefficients, modulus):
