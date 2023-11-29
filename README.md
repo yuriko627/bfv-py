@@ -28,5 +28,6 @@ The script will run through the following steps:
 
 ```bash
 $ python3 cli.py --help
-$ python3 cli.py -n 1024 -q 536870909 -t 7 --output input.json
+$ python3 cli.py -n 1024 -q 536870909 -t 65537 --output input.json
+$ python3 cli.py -n 4 -q 4637 -t 7 --output input.json
 ```

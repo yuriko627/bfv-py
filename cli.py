@@ -86,7 +86,7 @@ def main(args):
         }, f)
 
 def adjust_negative_coefficients(coefficients, modulus):
-    return [(modulus + coeff if coeff < 0 else coeff) for coeff in coefficients]
+    return [str(modulus + coeff if coeff < 0 else coeff) for coeff in coefficients]
 
 
 if __name__ == '__main__':
