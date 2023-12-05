@@ -10,7 +10,7 @@ def main(args):
     n = args.n
     q = args.q
     t = args.t
-    sigma = 3 # standard deviation of the discrete Gaussian distribution
+    sigma = 3.2 # standard deviation of the discrete Gaussian distribution
     
     # Initialize the DiscreteGaussian distribution
     distribution = DiscreteGaussian(sigma)

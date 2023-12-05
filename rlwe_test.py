@@ -7,11 +7,11 @@ import time
 class TestRLWE(unittest.TestCase):
 
     def setUp(self):
-        self.n = 4
-        self.q = 700
-        self.sigma = 10
+        self.n = 1024
+        self.q = 536870909
+        self.sigma = 3.2
         self.discrete_gaussian = DiscreteGaussian(self.sigma)
-        self.t = 7
+        self.t = 257
         # Note that t and q do not have to be prime nor coprime.
         self.rlwe = RLWE(self.n, self.q, self.t, self.discrete_gaussian)
 
