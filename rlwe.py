@@ -162,6 +162,52 @@ class RLWE:
         error = (e0, e1)
 
         return ciphertext, error
+    
+    def EncryptConst(self, public_key: (Polynomial, Polynomial), m: Polynomial):
+        """
+        Encrypt a given message m with a given public_key setting e0 and e1 to 0. This is used for the constant multiplication and addition.
+
+        Parameters:
+        public_key: Public key.
+        m: message.
+
+        Returns:
+        ciphertext: Generated ciphertext.
+        """
+        # Ensure that the message is in Rt
+        if m.ring != self.Rt:
+            raise AssertionError("The message must be in Rt.")
+
+        q = self.Rq.Q
+        t = self.Rt.Q
+
+        # delta = q/t
+        delta = q / t
+
+        # Round delta to the lower integer
+        delta = math.floor(delta)
+
+        # Compute the ciphertext.
+        # delta * m
+        delta_m = np.polymul(delta, m.coefficients)
+        # pk0 * u
+        pk0_u = np.polymul(public_key[0].coefficients, self.u.coefficients)
+
+        # ct_0 = delta * m + pk0 * u 
+        ct_0 = np.polyadd(delta_m, pk0_u)
+
+        # ct_0 will be in Rq
+        ct_0 = Polynomial(ct_0, self.Rq)
+
+        # ct_1 = pk1 * u
+        ct_1 = np.polymul(public_key[1].coefficients, self.u.coefficients)
+
+        # ct_0 will be in Rq
+        ct_1 = Polynomial(ct_1, self.Rq)
+
+        ciphertext = (ct_0, ct_1)
+
+        return ciphertext
 
     def Decrypt(self, secret_key: Polynomial, ciphertext: (Polynomial, Polynomial), error: (Polynomial, Polynomial)):
         """
