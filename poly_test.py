@@ -139,17 +139,19 @@ class TestPolynomialInRingRq(unittest.TestCase):
         q = 7
         Rq = PolynomialRing(n, q)
         coefficients = [3, 1, 0]
-        # fetch the Z_q set which is (-q/2, q/2]
-        assert Rq.Z_Q == [-3, -2, -1, 0, 1, 2, 3]
         # aq is the polynomial in Rq reduced by the quotient polynomial and by the modulus q.
         aq = Polynomial(coefficients, Rq)
         self.assertTrue(np.array_equal(aq.coefficients, [3, 1, 0]))
         # After reduction, the polynomial should not be multiple of the quotient
         _, remainder = np.polydiv(aq.coefficients, aq.ring.denominator)
         self.assertTrue(np.array_equal(remainder, aq.coefficients))
-        # All coefficients should be in Z_q
+        # All coefficients should be in Z_q - (-q/2, q/2]
+        Z_q = set()
+        for i in range(-q//2 + 1, q//2 + 1):
+            Z_q.add(i)
+
         for coeff in aq.coefficients:
-            self.assertTrue(coeff in Rq.Z_Q)
+            self.assertTrue(coeff in Z_q)
 
 
     def test_add_poly_in_ring_Rq(self):

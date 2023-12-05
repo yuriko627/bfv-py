@@ -19,17 +19,14 @@ class TestRLWE(unittest.TestCase):
         self.assertEqual(self.rlwe.R.denominator, PolynomialRing(self.n).denominator)
         self.assertEqual(self.rlwe.R.n, PolynomialRing(self.n).n)
         self.assertEqual(self.rlwe.R.Q, PolynomialRing(self.n).Q)
-        self.assertEqual(self.rlwe.R.Z_Q, PolynomialRing(self.n).Z_Q)
 
         self.assertEqual(self.rlwe.Rq.denominator, PolynomialRing(self.n, self.q).denominator)
         self.assertEqual(self.rlwe.Rq.n, PolynomialRing(self.n, self.q).n)
         self.assertEqual(self.rlwe.Rq.Q, PolynomialRing(self.n, self.q).Q)
-        self.assertEqual(self.rlwe.Rq.Z_Q, PolynomialRing(self.n, self.q).Z_Q)
 
         self.assertEqual(self.rlwe.Rt.denominator, PolynomialRing(self.n, self.t).denominator)
         self.assertEqual(self.rlwe.Rt.n, PolynomialRing(self.n, self.t).n)
         self.assertEqual(self.rlwe.Rt.Q, PolynomialRing(self.n, self.t).Q)
-        self.assertEqual(self.rlwe.Rt.Z_Q, PolynomialRing(self.n, self.t).Z_Q)
 
         self.assertEqual(self.rlwe.distribution, self.discrete_gaussian)
 
@@ -156,6 +153,6 @@ class TestRLWE(unittest.TestCase):
         # ensure that message and dec are of the same coefficients
         for i in range(len(message.coefficients)):
             self.assertEqual(message.coefficients[i], dec.coefficients[i])
-            
+
 if __name__ == "__main__":
     unittest.main()
