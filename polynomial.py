@@ -14,13 +14,6 @@ class PolynomialRing:
 		self.Q = modulus
 		self.n = n
 
-		# if modulus is defined, chek that it is > 1
-		if modulus is not None:
-			assert modulus > 1, "modulus must be > 1"
-			self.Z_Q = [j for j in range (-self.Q // 2 + 1, self. Q // 2 + 1)]
-		else:
-			self.Z_Q = None
-
 	def sample_polynomial(self):
 		"""
 		Sample polynomial a_Q from R_Q.
@@ -28,8 +21,13 @@ class PolynomialRing:
 		# ensure that modulus is set
 		if self.Q is None:
 			raise AssertionError("The modulus Q must be set to sample a polynomial from R_Q")
+		
+		# range for np.random.randint
+		lower_bound = -self.Q // 2  # included
+		upper_bound = self.Q // 2 + 1  # excluded
 
-		a_Q_coeff = np.random.choice(self.Z_Q, size=self.n)
+		# generate random coefficients
+		a_Q_coeff = np.random.randint(lower_bound, upper_bound, size=self.n)
 
 		return Polynomial(a_Q_coeff, self)
 
@@ -49,11 +47,6 @@ def reduce_coefficients(coefficients, ring):
 	if ring.Q is not None:
 		for i in range(len(remainder)):
 			remainder[i] = get_centered_remainder(remainder[i], ring.Q)
-
-		# ensure that the coefficients are in the set Z_Q wich is defined as (-Q/2, Q/2]
-		Z_Q_set = set(j for j in range(-ring.Q//2 + 1, ring.Q//2+1))
-		for value in remainder:
-			assert value in Z_Q_set, "Coefficients must be in Z_Q"
 
 	return remainder
 
