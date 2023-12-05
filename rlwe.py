@@ -197,10 +197,7 @@ class RLWE:
         # fresh error v is in Rq
         v = Polynomial(v, self.Rq)
 
-        rt_Q = q % t
-
-        threshold = q/(2*t) - rt_Q/2
-
+        threshold = q/(2*t) - 1/2
 
         for v in v.coefficients:
             assert abs(v) < (threshold), f"Noise {abs(v)} exceeds the threshold value {threshold}, decryption won't work"
