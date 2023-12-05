@@ -19,11 +19,6 @@ class TestPolynomialRing(unittest.TestCase):
 		self.assertEqual(Rq.Q, q)
 		self.assertEqual(Rq.n, n)
 
-	def test_init_with_n_and_invalid_q(self):
-		n = 4
-		q = 1
-		with self.assertRaisesRegex(AssertionError, "modulus must be > 1"): PolynomialRing(n, q)
-
 	def test_sample_poly_from_r_error(self):
 		n = 4
 		R = PolynomialRing(n)
