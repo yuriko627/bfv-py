@@ -170,6 +170,7 @@ class RLWE:
         Parameters:
         secret_key: Secret key.
         ciphertext: Ciphertext.
+        error: tuple of error values used in encryption. This is used to ensure that the noise is small enough to decrypt the message.
 
         Returns: Decrypted message.
         """
