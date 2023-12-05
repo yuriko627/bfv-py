@@ -217,6 +217,27 @@ class RLWE:
         quotient = Polynomial(quotient, self.Rt)
 
         return quotient
+    
+    def EvalAdd(self, ciphertext1: (Polynomial, Polynomial), ciphertext2: (Polynomial, Polynomial)):
+        """
+        Add two ciphertexts.
+
+        Parameters:
+        ciphertext1: First ciphertext.
+        ciphertext2: Second ciphertext.
+
+        Returns:
+        ciphertext_sum: Sum of the two ciphertexts.
+        """
+        # ct1_0 + ct2_0
+        ct0 = np.polyadd(ciphertext1[0].coefficients, ciphertext2[0].coefficients)
+        ct0 = Polynomial(ct0, self.Rq)
+
+        # ct1_1 + ct2_1
+        ct1 = np.polyadd(ciphertext1[1].coefficients, ciphertext2[1].coefficients)
+        ct1 = Polynomial(ct1, self.Rq)
+
+        return (ct0, ct1)
 
     def is_prime(self, n):
         if n < 2:
