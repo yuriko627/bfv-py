@@ -47,6 +47,11 @@ def reduce_coefficients(coefficients, ring):
 	if ring.Q is not None:
 		for i in range(len(remainder)):
 			remainder[i] = get_centered_remainder(remainder[i], ring.Q)
+		
+		# ensure that the coefficients are in the set Z_Q wich is defined as (-Q/2, Q/2]
+		for coeff in remainder:
+			assert coeff > -ring.Q // 2 and coeff <= ring.Q // 2, "coefficients must be in the set (-Q/2, Q/2]"
+
 
 	return remainder
 
