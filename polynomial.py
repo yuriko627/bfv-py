@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 class PolynomialRing:
 	# polynomial ring R = Z[x]/f(x) where f(x)=x^n+1
@@ -27,7 +28,8 @@ class PolynomialRing:
 		upper_bound = self.Q // 2 + 1  # excluded
 
 		# generate random coefficients
-		a_Q_coeff = np.random.randint(lower_bound, upper_bound, size=self.n)
+		a_Q_coeff = [random.randint(lower_bound, upper_bound) for _ in range(self.n)]
+
 
 		return Polynomial(a_Q_coeff, self)
 
