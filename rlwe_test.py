@@ -1,17 +1,18 @@
 import unittest
+
+import numpy as np
 from discrete_gauss import DiscreteGaussian
-from polynomial import PolynomialRing, Polynomial
+from polynomial import PolynomialRing, Polynomial, get_centered_remainder
 from rlwe import RLWE
-import time
 
 class TestRLWE(unittest.TestCase):
 
     def setUp(self):
-        self.n = 4
-        self.q = 700
-        self.sigma = 10
+        self.n = 1024
+        self.q = 536870909
+        self.sigma = 3.2
         self.discrete_gaussian = DiscreteGaussian(self.sigma)
-        self.t = 7
+        self.t = 257
         # Note that t and q do not have to be prime nor coprime.
         self.rlwe = RLWE(self.n, self.q, self.t, self.discrete_gaussian)
 
@@ -19,17 +20,14 @@ class TestRLWE(unittest.TestCase):
         self.assertEqual(self.rlwe.R.denominator, PolynomialRing(self.n).denominator)
         self.assertEqual(self.rlwe.R.n, PolynomialRing(self.n).n)
         self.assertEqual(self.rlwe.R.Q, PolynomialRing(self.n).Q)
-        self.assertEqual(self.rlwe.R.Z_Q, PolynomialRing(self.n).Z_Q)
 
         self.assertEqual(self.rlwe.Rq.denominator, PolynomialRing(self.n, self.q).denominator)
         self.assertEqual(self.rlwe.Rq.n, PolynomialRing(self.n, self.q).n)
         self.assertEqual(self.rlwe.Rq.Q, PolynomialRing(self.n, self.q).Q)
-        self.assertEqual(self.rlwe.Rq.Z_Q, PolynomialRing(self.n, self.q).Z_Q)
 
         self.assertEqual(self.rlwe.Rt.denominator, PolynomialRing(self.n, self.t).denominator)
         self.assertEqual(self.rlwe.Rt.n, PolynomialRing(self.n, self.t).n)
         self.assertEqual(self.rlwe.Rt.Q, PolynomialRing(self.n, self.t).Q)
-        self.assertEqual(self.rlwe.Rt.Z_Q, PolynomialRing(self.n, self.t).Z_Q)
 
         self.assertEqual(self.rlwe.distribution, self.discrete_gaussian)
 
@@ -157,68 +155,64 @@ class TestRLWE(unittest.TestCase):
         for i in range(len(message.coefficients)):
             self.assertEqual(message.coefficients[i], dec.coefficients[i])
 
-    def test_valid_decryption_real_world_params(self):
-        n = 1024
-        q = 2 ** 29
-        sigma = 3
-        discrete_gaussian = DiscreteGaussian(sigma)
-        t = 7
-        rlwe = RLWE(n, q, t, discrete_gaussian)
+    def test_eval_add(self):
+        secret_key = self.rlwe.SecretKeyGen()
 
-        start_time = time.time() 
-        
-        secret_key = rlwe.SecretKeyGen()
+        public_key = self.rlwe.PublicKeyGen(secret_key)
 
-        end_time = time.time() 
-        elapsed_time = end_time - start_time
-        
-        print(f"Time to generate secret key: {elapsed_time:.6f} seconds")
+        message1 = self.rlwe.Rt.sample_polynomial()
+        message2 = self.rlwe.Rt.sample_polynomial()
+        message_sum = np.polyadd(message1.coefficients, message2.coefficients)
 
-        print("secret_key: ", secret_key.coefficients)
+        ciphertext1, error1 = self.rlwe.Encrypt(public_key, message1)
+        ciphertext2, error2 = self.rlwe.Encrypt(public_key, message2)
 
-        start_time = time.time() 
+        ciphertext_sum = self.rlwe.EvalAdd(ciphertext1, ciphertext2)
 
-        public_key = rlwe.PublicKeyGen(secret_key)
+        # ciphertext_sum must be a tuple of two polynomials in Rq
+        self.assertEqual(ciphertext_sum[0].ring, self.rlwe.Rq)
+        self.assertEqual(ciphertext_sum[1].ring, self.rlwe.Rq)
 
-        end_time = time.time() 
-        elapsed_time = end_time - start_time
-        
-        print(f"Time to generate public key: {elapsed_time:.6f} seconds")
+        # decrypt ciphertext_sum
+        dec = self.rlwe.Decrypt(secret_key, ciphertext_sum, error1 + error2)
 
-        print("public_key: ", public_key[0].coefficients)
+        # reduce the coefficients of message_sum by the t using the centered remainder
+        for i in range(len(message_sum)):
+            message_sum[i] = get_centered_remainder(message_sum[i], self.t)
 
-        message = rlwe.Rt.sample_polynomial()
+        # ensure that message_sum and dec are the same
+        for i in range(len(message_sum)):
+            self.assertEqual(message_sum[i], dec.coefficients[i])
 
-        print("message: ", message.coefficients)
+    def test_eval_const_add(self):
+        secret_key = self.rlwe.SecretKeyGen()
 
-        start_time = time.time() 
+        public_key = self.rlwe.PublicKeyGen(secret_key)
 
-        ciphertext, error = rlwe.Encrypt(public_key, message)
+        message1 = self.rlwe.Rt.sample_polynomial()
+        message2 = self.rlwe.Rt.sample_polynomial()
+        message_sum = np.polyadd(message1.coefficients, message2.coefficients)
 
-        end_time = time.time() 
-        elapsed_time = end_time - start_time
-        
-        print(f"Time to encrypt the message: {elapsed_time:.6f} seconds")
+        ciphertext1, error1 = self.rlwe.Encrypt(public_key, message1)
+        const_ciphertext = self.rlwe.EncryptConst(public_key, message2)
 
-        print("ciphertext: ", ciphertext[0].coefficients)
+        ciphertext_sum = self.rlwe.EvalAdd(ciphertext1, const_ciphertext)
 
-        start_time = time.time() 
+        # ciphertext_sum must be a tuple of two polynomials in Rq
+        self.assertEqual(ciphertext_sum[0].ring, self.rlwe.Rq)
+        self.assertEqual(ciphertext_sum[1].ring, self.rlwe.Rq)
 
-        dec = rlwe.Decrypt(secret_key, ciphertext, error)
+        # decrypt ciphertext_sum
+        dec = self.rlwe.Decrypt(secret_key, ciphertext_sum, error1)
 
-        end_time = time.time() 
-        elapsed_time = end_time - start_time
-        
-        print(f"Time to decrypt the message: {elapsed_time:.6f} seconds")
+        # reduce the coefficients of message_sum by the t using the centered remainder
+        for i in range(len(message_sum)):
+            message_sum[i] = get_centered_remainder(message_sum[i], self.t)
 
-        print("dec: ", dec.coefficients)
-
-        # ensure that message and dec are of the same degree
-        self.assertEqual(len(message.coefficients), len(dec.coefficients))
-
-        # ensure that message and dec are of the same coefficients
-        for i in range(len(message.coefficients)):
-            self.assertEqual(message.coefficients[i], dec.coefficients[i])
+        # ensure that message_sum and dec are the same
+        for i in range(len(message_sum)):
+            self.assertEqual(message_sum[i], dec.coefficients[i])
+          
 
 if __name__ == "__main__":
     unittest.main()
