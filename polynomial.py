@@ -1,61 +1,66 @@
-import numpy as np
 import random
 
+
 class PolynomialRing:
-	# polynomial ring R = Z[x]/f(x) where f(x)=x^n+1
-	# n is a power of 2
-	# If the modulus Q > 1 is specified then the ring is R_Q = Z_Q[x]/f(x). Namely, the coefficients of the polynomials are in the set Z_Q = (-Q/2, Q/2]
-	def __init__(self, n, modulus=None):
-		# ensure that n is a power of 2
-		assert n > 0 and (n & (n-1)) == 0, "n must be a power of 2"
+    def __init__(self, n, modulus):
+        """
+        Initialize a polynomial ring R_modulus = Z_modulus[x]/f(x) where f(x)=x^n+1.
+        - n is a power of 2.
+        """
 
-		fx = [1] + [0] * (n-1) + [1]
+        assert n > 0 and (n & (n - 1)) == 0, "n must be a power of 2"
 
-		self.denominator = fx
-		self.Q = modulus
-		self.n = n
+        fx = [1] + [0] * (n - 1) + [1]
 
-	def sample_polynomial(self):
-		"""
-		Sample polynomial a_Q from R_Q.
-		"""
-		# ensure that modulus is set
-		if self.Q is None:
-			raise AssertionError("The modulus Q must be set to sample a polynomial from R_Q")
-		
-		# range for np.random.randint
-		lower_bound = -self.Q // 2  # included
-		upper_bound = self.Q // 2 + 1  # excluded
+        self.denominator = fx
+        self.modulus = modulus
+        self.n = n
 
-		# generate random coefficients
-		a_Q_coeff = [random.randint(lower_bound, upper_bound) for _ in range(self.n)]
+    def sample_polynomial(self):
+        """
+        Sample polynomial a_modulus from R_modulus.
+        """
 
+        # range for random.randint
+        lower_bound = -self.modulus // 2  # included
+        upper_bound = self.modulus // 2 + 1  # excluded
 
-		return Polynomial(a_Q_coeff, self)
+        # generate n random coefficients in the range [-modulus/2, modulus/2]
+        coeffs = [random.randint(lower_bound, upper_bound) for _ in range(self.n)]
+
+        return Polynomial(coeffs, self)
+
+    def __eq__(self, other):
+        if isinstance(other, PolynomialRing):
+            return (
+                self.denominator == other.denominator and self.modulus == other.modulus
+            )
+        return False
+
 
 class Polynomial:
-	def __init__(self, coefficients, ring: PolynomialRing):
-		self.ring = ring
+    def __init__(self, coefficients, ring: PolynomialRing):
+        self.ring = ring
 
-		# apply redution to the ring
-		remainder = reduce_coefficients(coefficients, self.ring)
-		self.coefficients = remainder
+        # apply redution of the coefficients to the ring
+        remainder = reduce_coefficients(coefficients, self.ring)
+
+        self.coefficients = remainder
+
 
 def reduce_coefficients(coefficients, ring):
-	# reduce (divide) coefficients by the denominator polynomial
-	_, remainder = np.polydiv(coefficients, ring.denominator)
+    # reduce (divide) coefficients by the denominator polynomial
+    _, remainder = poly_div(coefficients, ring.denominator)
 
-	# if the ring is R_Q, apply reduction by taking coeff mod Q
-	if ring.Q is not None:
-		for i in range(len(remainder)):
-			remainder[i] = get_centered_remainder(remainder[i], ring.Q)
-		
-		# ensure that the coefficients are in the set Z_Q wich is defined as (-Q/2, Q/2]
-		for coeff in remainder:
-			assert coeff > -ring.Q // 2 and coeff <= ring.Q // 2, "coefficients must be in the set (-Q/2, Q/2]"
+    # apply further reduction by taking coeff mod modulus
+    for i in range(len(remainder)):
+        remainder[i] = get_centered_remainder(remainder[i], ring.modulus)
 
+    # pad with zeroes at the beginning of the remainder to make it of size n
+    remainder = [0] * (ring.n - len(remainder)) + remainder
 
-	return remainder
+    return remainder
+
 
 def get_centered_remainder(x, modulus):
     # The concept of the centered remainder is that after performing the modulo operation,
@@ -69,5 +74,59 @@ def get_centered_remainder(x, modulus):
     return r if r <= modulus / 2 else r - modulus
 
 
+def poly_div(dividend: list[int], divisor: list[int]):
+    dividend = [int(x) for x in dividend]
+
+    # Initialize quotient and remainder
+    quotient = [0] * (len(dividend) - len(divisor) + 1)
+    remainder = list(dividend)
+
+    # Main division loop
+    for i in range(len(quotient)):
+        coeff = (
+            remainder[i] // divisor[0]
+        )  # Calculate the leading coefficient of quotient
+        # turn coeff into an integer
+        coeff = coeff
+        quotient[i] = coeff
+
+        # Subtract the current divisor*coeff from the remainder
+        for j in range(len(divisor)):
+            rem = remainder[i + j]
+            rem -= divisor[j] * coeff
+            remainder[i + j] = rem
+
+    # Remove leading zeroes in remainder, if any
+    while remainder and remainder[0] == 0:
+        remainder.pop(0)
+
+    return quotient, remainder
 
 
+def poly_mul(poly1: list[int], poly2: list[int]):
+    # The degree of the product polynomial is the sum of the degrees of the input polynomials
+    result_degree = len(poly1) + len(poly2) - 1
+    # Initialize the product polynomial with zeros
+    product = [0] * result_degree
+
+    # Multiply each term of the first polynomial by each term of the second polynomial
+    for i in range(len(poly1)):
+        for j in range(len(poly2)):
+            product[i + j] += poly1[i] * poly2[j]
+
+    return product
+
+
+def poly_add(poly1: list[int], poly2: list[int]):
+    # The degree of the sum polynomial is the max of the degrees of the input polynomials
+    result_degree = max(len(poly1), len(poly2))
+    # Initialize the sum polynomial with zeros
+    sum = [0] * result_degree
+
+    for i in range(len(poly1)):
+        sum[i + result_degree - len(poly1)] += poly1[i]
+
+    for i in range(len(poly2)):
+        sum[i + result_degree - len(poly2)] += poly2[i]
+
+    return sum
