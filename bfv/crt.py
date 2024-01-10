@@ -1,6 +1,6 @@
 import math
 from typing import List
-from polynomial import Polynomial, PolynomialRing, get_centered_remainder
+from .polynomial import Polynomial, PolynomialRing, get_centered_remainder
 
 
 class Q:

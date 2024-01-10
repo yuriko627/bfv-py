@@ -1,9 +1,9 @@
 import unittest
 
-from crt import Q, CRTInteger, CRTPolynomial
+from bfv.crt import Q, CRTInteger, CRTPolynomial
 import random as rand
 
-from polynomial import Polynomial, PolynomialRing, poly_add, poly_mul
+from bfv.polynomial import Polynomial, PolynomialRing, poly_add, poly_mul
 
 
 class TestQ(unittest.TestCase):

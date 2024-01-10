@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from discrete_gauss import DiscreteGaussian
+from bfv.discrete_gauss import DiscreteGaussian
 
 
 class TestDiscreteGaussian(unittest.TestCase):

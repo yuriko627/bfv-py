@@ -13,7 +13,7 @@ Python implementation of the BFV scheme of FHE. Only for educational purposes.
 ### Test
 
 ```bash
-$ python3 -m unittest discover -p '*_test.py'
+$ python3 -m unittest discover tests
 ```
 
 ### Generate inputs for circuit

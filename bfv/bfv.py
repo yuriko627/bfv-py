@@ -1,5 +1,5 @@
-from polynomial import PolynomialRing, Polynomial, poly_mul, poly_add
-from discrete_gauss import DiscreteGaussian
+from .polynomial import PolynomialRing, Polynomial, poly_mul, poly_add
+from .discrete_gauss import DiscreteGaussian
 import numpy as np
 
 

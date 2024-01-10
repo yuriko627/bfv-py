@@ -1,10 +1,10 @@
 import math
 import unittest
 
-from discrete_gauss import DiscreteGaussian
-from polynomial import PolynomialRing, Polynomial, get_centered_remainder, poly_add
-from bfv import BFV
-from crt import Q, CRTPolynomial
+from bfv.discrete_gauss import DiscreteGaussian
+from bfv.polynomial import PolynomialRing, Polynomial, get_centered_remainder, poly_add
+from bfv.bfv import BFV
+from bfv.crt import Q, CRTPolynomial
 
 
 class TestBFV(unittest.TestCase):

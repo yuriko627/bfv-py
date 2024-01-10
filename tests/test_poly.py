@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from polynomial import (
+from bfv.polynomial import (
     PolynomialRing,
     Polynomial,
     get_centered_remainder,

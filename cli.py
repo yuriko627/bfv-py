@@ -3,8 +3,8 @@ import json
 import math
 
 import numpy as np
-from bfv import BFV
-from discrete_gauss import DiscreteGaussian
+from bfv.bfv import BFV
+from bfv.discrete_gauss import DiscreteGaussian
 import time
 
 
