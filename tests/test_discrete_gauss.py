@@ -25,7 +25,3 @@ class TestDiscreteGaussian(unittest.TestCase):
         self.assertTrue(np.all(samples <= self.gaussian.z_upper))
         # check that all samples are integers
         self.assertTrue(np.all(np.equal(np.mod(samples, 1), 0)))
-
-
-if __name__ == "__main__":
-    unittest.main()

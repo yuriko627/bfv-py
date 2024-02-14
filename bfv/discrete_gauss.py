@@ -12,9 +12,9 @@ class DiscreteGaussian:
         - sigma: Standard deviation
         """
         self.sigma = sigma
-        
-		# The lower and upper bounds of the range of the discrete Gaussian distribution are rounded to the nearest integer (check section 4 https://inferati.azureedge.net/docs/inferati-fhe-bfv.pdf)
-        self.z_lower = np.rint(-6 * sigma) 
+
+        # The lower and upper bounds of the range of the discrete Gaussian distribution are rounded to the nearest integer (check section 4 https://inferati.azureedge.net/docs/inferati-fhe-bfv.pdf)
+        self.z_lower = np.rint(-6 * sigma)
         self.z_upper = np.rint(6 * sigma)
 
         # Generate the range which includes both ends
@@ -31,7 +31,7 @@ class DiscreteGaussian:
             self.prob / self.prob.sum()
         )  # Normalize the probabilities so their sum is 1
 
-    def sample(self, size) -> np.ndarray:
+    def sample(self, size: int) -> np.ndarray:
         """
         Sample from the Discrete Gaussian distribution
 
